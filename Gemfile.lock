@@ -1,0 +1,23 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rack (3.2.7)
+    rackup (2.3.1)
+      rack (>= 3)
+    sqlite3 (2.9.6-x86_64-linux-gnu)
+    webrick (1.9.2)
+
+PLATFORMS
+  x86_64-linux-gnu
+
+DEPENDENCIES
+  rack (~> 3.2.7)
+  rackup (~> 2.3.1)
+  sqlite3 (~> 2.9.6)
+  webrick (~> 1.9.2)
+
+RUBY VERSION
+   ruby 3.2.3p157
+
+BUNDLED WITH
+   2.4.20
