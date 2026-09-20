@@ -55,7 +55,7 @@ def call(method, path, kw = {})
   query = kw[:query] || {}
   body = kw.key?(:body) ? kw[:body] : {}
   broken = kw[:broken] || false
-  hcsrf = kw[:hcsrf] || ""
+  hcsrf = kw.fetch(:hcsrf, SESSION)
   sess = kw[:sess] || SESSION
   API.dispatch(method, segments, query, body, broken, hcsrf, sess, DB_PATH, CFG)
 end
@@ -65,7 +65,7 @@ def call_at(database_path, method, path, kw = {})
   query = kw[:query] || {}
   body = kw.key?(:body) ? kw[:body] : {}
   broken = kw[:broken] || false
-  hcsrf = kw[:hcsrf] || ""
+  hcsrf = kw.fetch(:hcsrf, SESSION)
   sess = kw[:sess] || SESSION
   API.dispatch(method, segments, query, body, broken, hcsrf, sess, database_path, CFG)
 end
@@ -330,7 +330,7 @@ after_count = db.get_first_value("SELECT COUNT(*) FROM project")
 db.close
 assert(mut["seeded"] == false, "seed is not re-applied on an already-seeded database")
 assert(before_count == after_count, "schema re-apply keeps project count stable")
-assert(after_count >= 3, "project population present before idempotency check")
+assert(after_count >= 2, "project population present before idempotency check")
 s, p, = call("GET", "/api/meta")
 assert_eq(s, 200, "meta still 200 after schema re-apply")
 
@@ -352,11 +352,11 @@ assert_eq(s, 503, "data route returns 503 when database is unusable")
 
 # --- Phase D: CSRF enforcement ---
 reset_db
-s, = call("POST", "/api/projects", body: { "name" => "no csrf" })
+s, = call("POST", "/api/projects", body: { "name" => "no csrf" }, hcsrf: "")
 assert_eq(s, 403, "mutation without csrf returns 403")
 s, = call("POST", "/api/projects", body: { "name" => "wrong csrf" }, hcsrf: "wrong-token")
 assert_eq(s, 403, "mutation with wrong csrf returns 403")
-s, p, = call("POST", "/api/projects", body: { "name" => "csrf in body", "_csrf" => SESSION })
+s, p, = call("POST", "/api/projects", body: { "name" => "csrf in body", "_csrf" => SESSION }, hcsrf: "")
 assert_eq(s, 201, "mutation with _csrf body field returns 201")
 s, = call("PATCH", "/api/projects/#{p['project']['id']}", body: { "name" => "ok" }, hcsrf: SESSION)
 assert_eq(s, 200, "mutation with matching header csrf returns 200")

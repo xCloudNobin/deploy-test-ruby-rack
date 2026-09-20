@@ -233,7 +233,7 @@ module API
     return json(404, "error" => "Project not found") if row.nil?
 
     tasks = db.execute(
-      "SELECT t.*, p.name AS project_name FROM task t"
+      "SELECT t.*, p.name AS project_name FROM task t" +
       " JOIN project p ON p.id = t.project_id WHERE t.project_id = ? ORDER BY t.id",
       [pid]
     )
@@ -249,11 +249,11 @@ module API
 
     ts = DB.now_utc
     db.execute(
-      "INSERT INTO project (name, description, status, created_at, updated_at)"
+      "INSERT INTO project (name, description, status, created_at, updated_at)" +
       " VALUES (?, ?, ?, ?, ?)",
       [name, description || "", status, ts, ts]
     )
-    db.execute("COMMIT")
+
     row = db.execute("SELECT * FROM project WHERE id = ?", [db.last_insert_row_id]).first
     json(201, "project" => project_json(row, db))
   end
@@ -282,7 +282,7 @@ module API
     return json(400, "error" => "validation failed", "fields" => errors) unless errors.empty?
 
     apply_updates(db, "project", updates, pid)
-    db.execute("COMMIT")
+
     row = db.execute("SELECT * FROM project WHERE id = ?", [pid]).first
     json(200, "project" => project_json(row, db))
   end
@@ -292,7 +292,7 @@ module API
     return json(404, "error" => "Project not found") if row.nil?
 
     db.execute("DELETE FROM project WHERE id = ?", [pid])
-    db.execute("COMMIT")
+
     json(204, nil)
   end
 
@@ -383,13 +383,13 @@ module API
 
     ts = DB.now_utc
     db.execute(
-      "INSERT INTO task (project_id, title, description, status, priority,"
+      "INSERT INTO task (project_id, title, description, status, priority," +
       " created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [pid, title, description || "", status, priority, ts, ts]
     )
-    db.execute("COMMIT")
+
     row = db.execute(
-      "SELECT t.*, p.name AS project_name FROM task t"
+      "SELECT t.*, p.name AS project_name FROM task t" +
       " JOIN project p ON p.id = t.project_id WHERE t.id = ?",
       [db.last_insert_row_id]
     ).first
@@ -398,7 +398,7 @@ module API
 
   def update_task(db, pid, body)
     row = db.execute(
-      "SELECT t.*, p.name AS project_name FROM task t"
+      "SELECT t.*, p.name AS project_name FROM task t" +
       " JOIN project p ON p.id = t.project_id WHERE t.id = ?",
       [pid]
     ).first
@@ -436,9 +436,9 @@ module API
     return json(400, "error" => "validation failed", "fields" => errors) unless errors.empty?
 
     apply_updates(db, "task", updates, pid)
-    db.execute("COMMIT")
+
     row = db.execute(
-      "SELECT t.*, p.name AS project_name FROM task t"
+      "SELECT t.*, p.name AS project_name FROM task t" +
       " JOIN project p ON p.id = t.project_id WHERE t.id = ?",
       [pid]
     ).first
@@ -447,7 +447,7 @@ module API
 
   def get_task(db, pid)
     row = db.execute(
-      "SELECT t.*, p.name AS project_name FROM task t"
+      "SELECT t.*, p.name AS project_name FROM task t" +
       " JOIN project p ON p.id = t.project_id WHERE t.id = ?",
       [pid]
     ).first
@@ -461,7 +461,7 @@ module API
     return json(404, "error" => "Task not found") if row.nil?
 
     db.execute("DELETE FROM task WHERE id = ?", [pid])
-    db.execute("COMMIT")
+
     json(204, nil)
   end
 

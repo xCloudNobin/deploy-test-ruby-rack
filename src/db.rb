@@ -93,7 +93,7 @@ module DB
     project_ids = {}
     SEED_PROJECTS.each do |name, description, status|
       db.execute(
-        "INSERT INTO project (name, description, status, created_at, updated_at)"
+        "INSERT INTO project (name, description, status, created_at, updated_at)" +
         " VALUES (?, ?, ?, ?, ?)",
         [name, description, status, ts, ts]
       )
@@ -101,13 +101,12 @@ module DB
     end
     SEED_TASKS.each do |project, title, description, status, priority|
       db.execute(
-        "INSERT INTO task (project_id, title, description, status, priority,"
+        "INSERT INTO task (project_id, title, description, status, priority," +
         " created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [project_ids[project], title, description, status, priority, ts, ts]
       )
     end
     db.execute("INSERT INTO seed_flag (id, applied_at) VALUES (1, ?)", [ts])
-    db.execute("COMMIT")
     { "seeded" => true, "projects" => SEED_PROJECTS.length, "tasks" => SEED_TASKS.length }
   end
 
@@ -127,7 +126,6 @@ module DB
         return { "ok" => false, "error" => "heartbeat write/read-back failed" }
       end
       db.execute("DELETE FROM heartbeat WHERE id = ?", [db.last_insert_row_id])
-      db.execute("COMMIT")
       { "ok" => true }
     rescue StandardError => e
       begin
