@@ -66,7 +66,7 @@ pick_port() {
 
 start_server() { # db_path port logfile -> 0 on success
   local db_path="$1" port="$2" logfile="$3"
-  mkdir -p "$(dirname "$db_path")"
+  mkdir -p "$(dirname "$db_path")" 2>/dev/null || true
   DATA_DIR="$(dirname "$db_path")" \
   DATABASE_PATH="$db_path" \
   PORT="$port" BIND_HOST="127.0.0.1" BUILD_MARKER="smoke-$port" \
@@ -95,7 +95,6 @@ stop_server() { # graceful SIGTERM, wait, SIGKILL fallback; drops pid from list
     bad "process did not exit on SIGTERM, forcing"
     kill -9 "$target" 2>/dev/null || true
   fi
-  PIDS=()
 }
 
 wait_live() { # port label [logfile]
@@ -129,10 +128,14 @@ body() { # url -> body
   curl -s --max-time 3 -b "$JAR" -c "$JAR" "$1"
 }
 
-json_field() { # file dot.path -> value
+json_field() { # file-or-inline-json dot.path -> value
   "$BUNDLE" exec ruby -rjson - "$1" "$2" <<'RUBY'
-path, expr = ARGV[0], ARGV[1]
-d = JSON.parse(File.read(path))
+arg, expr = ARGV[0], ARGV[1]
+d = begin
+  JSON.parse(arg)
+rescue JSON::ParserError
+  JSON.parse(File.read(arg))
+end
 expr.split(".").each { |k| d = d.is_a?(Hash) ? d[k] : nil }
 print d
 RUBY

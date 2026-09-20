@@ -23,7 +23,7 @@ cfg = ConfigLoader.load
 trap("TERM") { exit(0) }
 trap("INT") { exit(0) }
 
-app, = Rack::Builder.parse_file(File.join(ConfigLoader::ROOT, "config.ru"))
+app, = Rack::Builder.parse_file(File.join(ROOT, "config.ru"))
 
 Rackup::Handler::WEBrick.run(
   app,
