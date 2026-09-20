@@ -1,0 +1,20 @@
+# Bundler
+.bundle/
+vendor/bundle/
+
+# SQLite persistence (runtime data, never committed)
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Build artifacts and release marker
+VERSION
+
+# Local environment overrides
+.env
+
+# Logs and OS noise
+*.log
+.DS_Store
